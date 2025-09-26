@@ -1,0 +1,222 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Space Grotesk', sans-serif;
+    @apply overflow-x-hidden;
+  }
+  
+  body {
+    @apply bg-gray-950 text-white min-h-screen relative;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(245, 101, 37, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 40% 90%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+  }
+  
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      linear-gradient(90deg, transparent 79px, rgba(255, 255, 255, 0.02) 81px, transparent 82px),
+      linear-gradient(0deg, transparent 79px, rgba(255, 255, 255, 0.02) 81px, transparent 82px);
+    background-size: 80px 80px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-gradient-to-br from-gray-800/90 to-gray-900/90 rounded-2xl shadow-2xl border border-gray-700/50 backdrop-blur-sm;
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+  
+  .card-premium {
+    @apply card relative overflow-hidden;
+  }
+  
+  .card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245, 101, 37, 0.8), transparent);
+    animation: shimmer 3s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  
+  .card-header {
+    @apply px-8 py-6 border-b border-gray-700/30 bg-gradient-to-r from-transparent to-gray-800/20;
+  }
+  
+  .card-content {
+    @apply px-8 py-6;
+  }
+  
+  .stat-card {
+    @apply card-premium p-6 text-center hover:scale-105 transition-all duration-300 cursor-default;
+  }
+  
+  .stat-card:hover {
+    box-shadow: 
+      0 32px 64px -12px rgba(245, 101, 37, 0.15),
+      0 0 0 1px rgba(245, 101, 37, 0.2);
+  }
+  
+  .stat-value {
+    @apply text-3xl font-bold font-orbitron text-basketball-orange tracking-wider;
+    text-shadow: 0 0 20px rgba(245, 101, 37, 0.3);
+  }
+  
+  .stat-label {
+    @apply text-sm font-rajdhani font-medium text-gray-300 mt-2 uppercase tracking-widest;
+  }
+  
+  .team-colors-home {
+    @apply bg-gradient-to-br from-blue-500/80 via-blue-600/90 to-blue-700;
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+  }
+  
+  .team-colors-away {
+    @apply bg-gradient-to-br from-red-500/80 via-red-600/90 to-red-700;
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);
+  }
+  
+  .live-indicator {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold font-rajdhani bg-red-500/20 text-red-300 border border-red-500/30;
+    animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.8);
+    }
+  }
+  
+  .win-probability-bar {
+    @apply h-6 rounded-full overflow-hidden bg-gray-800/60 border border-gray-600/30 backdrop-blur-sm;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .probability-fill {
+    @apply h-full transition-all duration-1500 ease-out relative;
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 0 20px rgba(245, 101, 37, 0.3);
+  }
+  
+  .section-title {
+    @apply text-3xl font-orbitron font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+  }
+  
+  .section-subtitle {
+    @apply text-lg font-rajdhani font-medium text-gray-400 uppercase tracking-widest;
+  }
+  
+  .metric-grid {
+    @apply grid grid-cols-2 md:grid-cols-4 gap-4;
+  }
+  
+  .glass-button {
+    @apply px-6 py-3 rounded-xl font-rajdhani font-semibold text-sm uppercase tracking-wide
+           bg-gradient-to-r from-basketball-orange/10 to-yellow-500/10 
+           border border-basketball-orange/30 text-basketball-orange
+           hover:from-basketball-orange/20 hover:to-yellow-500/20 
+           hover:border-basketball-orange/50 hover:text-white
+           transition-all duration-300 backdrop-blur-sm
+           hover:shadow-lg hover:shadow-basketball-orange/25;
+  }
+  
+  .glass-button:hover {
+    transform: translateY(-2px);
+  }
+  
+  .feature-card {
+    @apply card p-8 hover:scale-105 transition-all duration-300 cursor-pointer group relative overflow-hidden;
+    background: linear-gradient(135deg, rgba(55, 65, 81, 0.3) 0%, rgba(17, 24, 39, 0.8) 100%);
+    border: 1px solid rgba(75, 85, 99, 0.3);
+  }
+  
+  .feature-card:hover {
+    border-color: rgba(245, 101, 37, 0.4);
+    box-shadow: 
+      0 20px 40px -12px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(245, 101, 37, 0.2);
+  }
+  
+  .feature-icon {
+    @apply w-16 h-16 rounded-xl flex items-center justify-center mb-6 relative;
+  }
+  
+  .feature-title {
+    @apply text-2xl font-orbitron font-bold mb-4;
+  }
+  
+  .feature-description {
+    @apply text-gray-300 font-rajdhani leading-relaxed mb-6 flex-grow;
+  }
+  
+  .feature-arrow {
+    @apply text-2xl font-bold text-basketball-orange self-end;
+  }
+  
+  .slider {
+    @apply bg-gray-700;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    @apply w-5 h-5 bg-blue-400 rounded-full cursor-pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  }
+  
+  .slider::-moz-range-thumb {
+    @apply w-5 h-5 bg-blue-400 rounded-full cursor-pointer border-0;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-basketball-orange to-yellow-400 bg-clip-text text-transparent;
+  }
+  
+  .glassmorphism {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+}
