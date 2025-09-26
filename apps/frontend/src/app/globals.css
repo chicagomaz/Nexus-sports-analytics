@@ -205,6 +205,17 @@
     @apply w-5 h-5 bg-blue-400 rounded-full cursor-pointer border-0;
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
   }
+
+  @keyframes slideInLeft {
+    0% {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 }
 
 @layer utilities {
