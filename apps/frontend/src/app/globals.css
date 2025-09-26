@@ -160,7 +160,7 @@
   }
   
   .feature-card {
-    @apply card p-8 hover:scale-105 transition-all duration-300 cursor-pointer group relative overflow-hidden;
+    @apply card p-8 hover:scale-105 transition-all duration-300 cursor-pointer relative overflow-hidden;
     background: linear-gradient(135deg, rgba(55, 65, 81, 0.3) 0%, rgba(17, 24, 39, 0.8) 100%);
     border: 1px solid rgba(75, 85, 99, 0.3);
   }
