@@ -1,31 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { apiService } from '@/lib/api'
+import { nbaApiService, type NBAGameDetail } from '@/lib/nbaApi'
 
-interface HistoricalGame {
-  gameId: string
-  date: string
-  homeTeam: {
-    name: string
-    abbreviation: string
-    score: number
-  }
-  awayTeam: {
-    name: string
-    abbreviation: string
-    score: number
-  }
-  isPlayoffs: boolean
-  overtime: boolean
-  gameType: 'regular' | 'playoffs' | 'classic'
-  summary?: string
-}
+// Use the NBAGameDetail type from our API service
+type HistoricalGame = NBAGameDetail
 
 export default function HistoricalPage() {
   const [games, setGames] = useState<HistoricalGame[]>([])
+  const [allGames, setAllGames] = useState<HistoricalGame[]>([]) // Store all fetched games
   const [loading, setLoading] = useState(false)
   const [selectedGame, setSelectedGame] = useState<HistoricalGame | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedSeason, setSelectedSeason] = useState<number>(2024)
   const [filters, setFilters] = useState({
     dateFrom: '',
     dateTo: '',
@@ -35,80 +22,34 @@ export default function HistoricalPage() {
     searchTerm: ''
   })
 
-  // Demo data for historical games
-  const demoGames: HistoricalGame[] = [
-    {
-      gameId: 'historic_1',
-      date: '2016-06-19',
-      homeTeam: { name: 'Cleveland Cavaliers', abbreviation: 'CLE', score: 93 },
-      awayTeam: { name: 'Golden State Warriors', abbreviation: 'GSW', score: 89 },
-      isPlayoffs: true,
-      overtime: false,
-      gameType: 'classic',
-      summary: 'Game 7 NBA Finals - Cavaliers complete historic comeback from 3-1 deficit'
-    },
-    {
-      gameId: 'historic_2',
-      date: '2013-06-18',
-      homeTeam: { name: 'Miami Heat', abbreviation: 'MIA', score: 95 },
-      awayTeam: { name: 'San Antonio Spurs', abbreviation: 'SAS', score: 88 },
-      isPlayoffs: true,
-      overtime: true,
-      gameType: 'classic',
-      summary: 'Game 6 NBA Finals - Ray Allen\'s clutch 3-pointer forces overtime'
-    },
-    {
-      gameId: 'historic_3',
-      date: '2020-08-24',
-      homeTeam: { name: 'Portland Trail Blazers', abbreviation: 'POR', score: 117 },
-      awayTeam: { name: 'Denver Nuggets', abbreviation: 'DEN', score: 126 },
-      isPlayoffs: true,
-      overtime: true,
-      gameType: 'playoffs',
-      summary: 'Triple overtime thriller - Nuggets overcome 3-1 series deficit'
-    },
-    {
-      gameId: 'historic_4',
-      date: '2024-01-15',
-      homeTeam: { name: 'Boston Celtics', abbreviation: 'BOS', score: 132 },
-      awayTeam: { name: 'Los Angeles Lakers', abbreviation: 'LAL', score: 125 },
-      isPlayoffs: false,
-      overtime: false,
-      gameType: 'regular',
-      summary: 'High-scoring regular season matchup between conference rivals'
-    },
-    {
-      gameId: 'historic_5',
-      date: '2006-01-22',
-      homeTeam: { name: 'Los Angeles Lakers', abbreviation: 'LAL', score: 122 },
-      awayTeam: { name: 'Toronto Raptors', abbreviation: 'TOR', score: 104 },
-      isPlayoffs: false,
-      overtime: false,
-      gameType: 'classic',
-      summary: 'Kobe Bryant scores 81 points - second highest in NBA history'
-    }
-  ]
-
   useEffect(() => {
     loadHistoricalGames()
-  }, [filters])
+  }, [selectedSeason])
+
+  useEffect(() => {
+    // Apply filters to already loaded games
+    if (allGames.length > 0) {
+      const filteredGames = nbaApiService.searchGames(allGames, filters)
+      setGames(filteredGames)
+    }
+  }, [filters, allGames])
 
   const loadHistoricalGames = async () => {
     setLoading(true)
+    setError(null)
+    
     try {
-      // In a real app, this would filter based on the API
-      const filteredGames = demoGames.filter(game => {
-        if (filters.gameType !== 'all' && game.gameType !== filters.gameType) return false
-        if (filters.team && !game.homeTeam.name.toLowerCase().includes(filters.team.toLowerCase()) && 
-            !game.awayTeam.name.toLowerCase().includes(filters.team.toLowerCase())) return false
-        if (filters.searchTerm && !game.summary?.toLowerCase().includes(filters.searchTerm.toLowerCase()) &&
-            !game.homeTeam.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) &&
-            !game.awayTeam.name.toLowerCase().includes(filters.searchTerm.toLowerCase())) return false
-        return true
-      })
-      setGames(filteredGames)
+      // Try Ball Don't Lie API first (more reliable)
+      const fetchedGames = await nbaApiService.fetchGamesBallDontLie(1, selectedSeason)
+      setAllGames(fetchedGames)
+      setGames(fetchedGames)
     } catch (error) {
       console.error('Failed to load historical games:', error)
+      setError('Failed to load games from NBA API. Showing demo data.')
+      
+      // Fallback to demo data
+      const demoGames = await nbaApiService.fetchGamesBallDontLie(1) // This will return demo data on error
+      setAllGames(demoGames)
       setGames(demoGames)
     } finally {
       setLoading(false)
@@ -145,9 +86,33 @@ export default function HistoricalPage() {
           </div>
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <div className="flex items-center space-x-2 text-red-400">
+              <span>⚠️</span>
+              <span className="text-sm font-rajdhani">{error}</span>
+            </div>
+          </div>
+        )}
+
         {/* Search and Filters */}
         <div className="card p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-rajdhani font-medium text-gray-300 mb-2">Season</label>
+              <select
+                value={selectedSeason}
+                onChange={(e) => setSelectedSeason(parseInt(e.target.value))}
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-purple-400 focus:outline-none"
+              >
+                <option value={2024}>2023-24</option>
+                <option value={2023}>2022-23</option>
+                <option value={2022}>2021-22</option>
+                <option value={2021}>2020-21</option>
+                <option value={2020}>2019-20</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-rajdhani font-medium text-gray-300 mb-2">Search Games</label>
               <input
@@ -194,29 +159,46 @@ export default function HistoricalPage() {
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-400 font-rajdhani">
               Found {games.length} games matching your criteria
+              {loading && <span className="ml-2 text-purple-400">Loading...</span>}
             </div>
-            <button
-              onClick={() => setFilters({
-                dateFrom: '',
-                dateTo: '',
-                team: '',
-                gameType: 'all',
-                minScoreDiff: '',
-                searchTerm: ''
-              })}
-              className="text-sm text-purple-400 hover:text-purple-300 font-rajdhani"
-            >
-              Clear Filters
-            </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={loadHistoricalGames}
+                disabled={loading}
+                className="text-sm text-green-400 hover:text-green-300 font-rajdhani disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🔄 Refresh Data
+              </button>
+              <button
+                onClick={() => setFilters({
+                  dateFrom: '',
+                  dateTo: '',
+                  team: '',
+                  gameType: 'all',
+                  minScoreDiff: '',
+                  searchTerm: ''
+                })}
+                className="text-sm text-purple-400 hover:text-purple-300 font-rajdhani"
+              >
+                Clear Filters
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Games Grid */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400"></div>
-          <span className="ml-4 text-xl">Loading historical games...</span>
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-400 mb-4"></div>
+          <span className="text-xl text-gray-300 mb-2">Loading NBA Games...</span>
+          <span className="text-sm text-gray-500 font-rajdhani">Fetching data from NBA API</span>
+        </div>
+      ) : games.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="text-6xl mb-4">🏀</div>
+          <span className="text-xl text-gray-300 mb-2">No games found</span>
+          <span className="text-sm text-gray-500 font-rajdhani">Try adjusting your search filters</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
